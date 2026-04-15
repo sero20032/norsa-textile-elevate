@@ -27,7 +27,6 @@ const Footer: React.FC = () => {
             <div className="space-y-2 text-sm text-primary-foreground/70">
               <p>info@norsatextile.fi</p>
               <p>{t("Y-tunnus", "Business ID")}: [placeholder]</p>
-              <p>{t("Osoite", "Address")}: [placeholder]</p>
             </div>
           </div>
 
