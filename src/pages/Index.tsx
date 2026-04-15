@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import heroImage from "@/assets/hero-textile.jpg";
 import heroImage from "@/assets/hero-textile.jpg";
 import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
