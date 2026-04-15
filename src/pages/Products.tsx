@@ -1,7 +1,9 @@
 import React from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
@@ -13,9 +15,9 @@ const fallbackCategories = [
 ];
 
 const fallbackProducts = [
-  { id: "p1", name_fi: "Classic Huppari", name_en: "Classic Hoodie", category: "Hupparit", images: [hoodiesImg] },
-  { id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt", category: "T-paidat", images: [tshirtsImg] },
-  { id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap", category: "Lippikset", images: [capsImg] },
+  { id: "p1", name_fi: "Classic Huppari", name_en: "Classic Hoodie", description_fi: "Laadukas huppari", description_en: "Premium hoodie", category: "Hupparit", images: [hoodiesImg] },
+  { id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt", description_fi: "Korkealaatuinen t-paita", description_en: "High-quality t-shirt", category: "T-paidat", images: [tshirtsImg] },
+  { id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap", description_fi: "Tyylikäs lippis", description_en: "Stylish cap", category: "Lippikset", images: [capsImg] },
 ];
 
 const Products: React.FC = () => {
@@ -23,9 +25,28 @@ const Products: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
 
+  const { data: dbCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("*");
+      return data;
+    },
+  });
+
+  const { data: dbProducts } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("*");
+      return data;
+    },
+  });
+
+  const categories = dbCategories && dbCategories.length > 0 ? dbCategories : fallbackCategories;
+  const allProducts = dbProducts && dbProducts.length > 0 ? dbProducts : fallbackProducts;
+
   const filteredProducts = selectedCategory
-    ? fallbackProducts.filter((p) => p.category === selectedCategory)
-    : fallbackProducts;
+    ? allProducts.filter((p) => p.category === selectedCategory)
+    : allProducts;
 
   return (
     <Layout>
@@ -38,7 +59,6 @@ const Products: React.FC = () => {
             {t("Selaa kategorioita ja tuotteita.", "Browse categories and products.")}
           </p>
 
-          {/* Category filters */}
           <div className="flex flex-wrap gap-3 mb-12">
             <Link
               to="/tuotteet"
@@ -50,7 +70,7 @@ const Products: React.FC = () => {
             >
               {t("Kaikki", "All")}
             </Link>
-            {fallbackCategories.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.id}
                 to={`/tuotteet?category=${cat.name_fi}`}
@@ -65,7 +85,6 @@ const Products: React.FC = () => {
             ))}
           </div>
 
-          {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <Link
@@ -73,28 +92,30 @@ const Products: React.FC = () => {
                 to={`/tuotteet/${product.id}`}
                 className="group"
               >
-                <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4">
-                  <img
-                    src={product.images[0]}
-                    alt={t(product.name_fi, product.name_en)}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                    width={800}
-                    height={1000}
-                  />
+                <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4 bg-secondary">
+                  {product.images && product.images[0] && (
+                    <img
+                      src={product.images[0]}
+                      alt={t(product.name_fi, product.name_en)}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                      width={800}
+                      height={1000}
+                    />
+                  )}
                 </div>
                 <h3 className="text-lg font-semibold group-hover:text-muted-foreground transition-colors">
                   {t(product.name_fi, product.name_en)}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t(
-                    fallbackCategories.find((c) => c.name_fi === product.category)?.name_fi || "",
-                    fallbackCategories.find((c) => c.name_fi === product.category)?.name_en || ""
-                  )}
-                </p>
               </Link>
             ))}
           </div>
+
+          {filteredProducts.length === 0 && (
+            <p className="text-center text-muted-foreground py-12">
+              {t("Ei tuotteita tässä kategoriassa.", "No products in this category.")}
+            </p>
+          )}
         </div>
       </section>
     </Layout>

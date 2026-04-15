@@ -1,39 +1,32 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
 const fallbackProducts = [
   {
-    id: "p1",
-    name_fi: "Classic Huppari",
-    name_en: "Classic Hoodie",
+    id: "p1", name_fi: "Classic Huppari", name_en: "Classic Hoodie",
     description_fi: "Laadukas huppari yritysbrändäykseen. Saatavilla painatuksella tai brodeerauksella.",
     description_en: "Premium hoodie for corporate branding. Available with printing or embroidery.",
-    category: "Hupparit",
-    images: [hoodiesImg],
+    category: "Hupparit", images: [hoodiesImg],
   },
   {
-    id: "p2",
-    name_fi: "Premium T-paita",
-    name_en: "Premium T-Shirt",
-    description_fi: "Korkealaatuinen t-paita, täydellinen yritysvaatteeksi. Monipuoliset painatusmahdollisuudet.",
-    description_en: "High-quality t-shirt, perfect for corporate wear. Versatile printing options.",
-    category: "T-paidat",
-    images: [tshirtsImg],
+    id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt",
+    description_fi: "Korkealaatuinen t-paita, täydellinen yritysvaatteeksi.",
+    description_en: "High-quality t-shirt, perfect for corporate wear.",
+    category: "T-paidat", images: [tshirtsImg],
   },
   {
-    id: "p3",
-    name_fi: "Brodeerattu lippis",
-    name_en: "Embroidered Cap",
-    description_fi: "Tyylikäs lippis brodeeratulla logolla. Erinomainen promootiotuote.",
-    description_en: "Stylish cap with embroidered logo. Excellent promotional product.",
-    category: "Lippikset",
-    images: [capsImg],
+    id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap",
+    description_fi: "Tyylikäs lippis brodeeratulla logolla.",
+    description_en: "Stylish cap with embroidered logo.",
+    category: "Lippikset", images: [capsImg],
   },
 ];
 
@@ -42,7 +35,16 @@ const ProductDetail: React.FC = () => {
   const { t } = useLanguage();
   const [activeImage, setActiveImage] = useState(0);
 
-  const product = fallbackProducts.find((p) => p.id === id);
+  const { data: dbProduct } = useQuery({
+    queryKey: ["product", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("*").eq("id", id!).maybeSingle();
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const product = dbProduct || fallbackProducts.find((p) => p.id === id);
 
   if (!product) {
     return (
@@ -57,6 +59,8 @@ const ProductDetail: React.FC = () => {
     );
   }
 
+  const images = product.images && product.images.length > 0 ? product.images : [];
+
   return (
     <Layout>
       <section className="py-24 px-4 lg:px-8">
@@ -66,35 +70,37 @@ const ProductDetail: React.FC = () => {
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
-            {/* Image gallery */}
             <div>
-              <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4">
-                <img
-                  src={product.images[activeImage]}
-                  alt={t(product.name_fi, product.name_en)}
-                  className="w-full h-full object-cover"
-                  width={800}
-                  height={1000}
-                />
-              </div>
-              {product.images.length > 1 && (
-                <div className="flex gap-3">
-                  {product.images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveImage(idx)}
-                      className={`w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
-                        activeImage === idx ? "border-foreground" : "border-transparent"
-                      }`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    </button>
-                  ))}
-                </div>
+              {images.length > 0 && (
+                <>
+                  <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4">
+                    <img
+                      src={images[activeImage]}
+                      alt={t(product.name_fi, product.name_en)}
+                      className="w-full h-full object-cover"
+                      width={800}
+                      height={1000}
+                    />
+                  </div>
+                  {images.length > 1 && (
+                    <div className="flex gap-3">
+                      {images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImage(idx)}
+                          className={`w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
+                            activeImage === idx ? "border-foreground" : "border-transparent"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            {/* Product info */}
             <div className="flex flex-col justify-center">
               <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
                 {product.category}
@@ -103,7 +109,7 @@ const ProductDetail: React.FC = () => {
                 {t(product.name_fi, product.name_en)}
               </h1>
               <p className="text-muted-foreground leading-relaxed mb-10">
-                {t(product.description_fi, product.description_en)}
+                {t(product.description_fi || "", product.description_en || "")}
               </p>
               <Link to="/tarjous">
                 <Button variant="default" size="lg" className="px-10">

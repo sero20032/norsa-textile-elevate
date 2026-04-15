@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-textile.jpg";
 import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
@@ -16,6 +18,16 @@ const fallbackCategories = [
 
 const Index: React.FC = () => {
   const { t } = useLanguage();
+
+  const { data: dbCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("*");
+      return data;
+    },
+  });
+
+  const categories = dbCategories && dbCategories.length > 0 ? dbCategories : fallbackCategories;
 
   return (
     <Layout>
@@ -67,7 +79,7 @@ const Index: React.FC = () => {
             )}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {fallbackCategories.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.id}
                 to={`/tuotteet?category=${cat.name_fi}`}
