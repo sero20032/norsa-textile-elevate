@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
-import { Mail, MapPin, Building } from "lucide-react";
+import { Mail, Building } from "lucide-react";
 
 const Contact: React.FC = () => {
   const { t } = useLanguage();
@@ -36,13 +36,7 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <MapPin className="h-5 w-5 mt-1 text-foreground" />
-              <div>
-                <h3 className="font-medium mb-1">{t("Osoite", "Address")}</h3>
-                <p className="text-muted-foreground">[placeholder]</p>
-              </div>
-            </div>
+
           </div>
         </div>
       </section>
