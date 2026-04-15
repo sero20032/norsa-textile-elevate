@@ -79,7 +79,7 @@ const Index: React.FC = () => {
             )}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {fallbackCategories.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.id}
                 to={`/tuotteet?category=${cat.name_fi}`}
