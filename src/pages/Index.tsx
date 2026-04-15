@@ -19,6 +19,16 @@ const fallbackCategories = [
 const Index: React.FC = () => {
   const { t } = useLanguage();
 
+  const { data: dbCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("*");
+      return data;
+    },
+  });
+
+  const categories = dbCategories && dbCategories.length > 0 ? dbCategories : fallbackCategories;
+
   return (
     <Layout>
       {/* Hero Section */}
