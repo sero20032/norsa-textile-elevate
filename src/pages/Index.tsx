@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-textile.jpg";
-import heroImage from "@/assets/hero-textile.jpg";
 import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
