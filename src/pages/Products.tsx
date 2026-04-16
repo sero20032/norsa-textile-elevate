@@ -9,13 +9,13 @@ import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
 const fallbackCategories = [
-  { id: "1", name_fi: "fleecetakit", name_en: "Fleece Jackets", cover_image: hoodiesImg },
+  { id: "1", name_fi: "Hupparit", name_en: "Hoodies", cover_image: hoodiesImg },
   { id: "2", name_fi: "T-paidat", name_en: "T-Shirts", cover_image: tshirtsImg },
   { id: "3", name_fi: "Lippikset", name_en: "Caps", cover_image: capsImg },
 ];
 
 const fallbackProducts = [
-  { id: "p1", name_fi: "Classic Fleecetakki", name_en: "Classic Fleece Jacket", description_fi: "Laadukas fleecetakki", description_en: "Premium fleece jacket", category: "fleecetakit", images: [hoodiesImg] },
+  { id: "p1", name_fi: "Classic Huppari", name_en: "Classic Hoodie", description_fi: "Laadukas huppari", description_en: "Premium hoodie", category: "Hupparit", images: [hoodiesImg] },
   { id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt", description_fi: "Korkealaatuinen t-paita", description_en: "High-quality t-shirt", category: "T-paidat", images: [tshirtsImg] },
   { id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap", description_fi: "Tyylikäs lippis", description_en: "Stylish cap", category: "Lippikset", images: [capsImg] },
 ];
