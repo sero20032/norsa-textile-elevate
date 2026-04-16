@@ -9,14 +9,14 @@ import hoodiesImg from "@/assets/category-hoodies.jpg";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 import fleece1Img from "@/assets/fleece-1.png";
-import fleece3Img from "@/assets/fleece-3.jpg";
+
 
 const fallbackProducts = [
   {
     id: "p1", name_fi: "Fleecetakki", name_en: "Fleece Jacket",
     description_fi: "Laadukas fleecetakki yritysbrändäykseen. Saatavilla painatuksella tai brodeerauksella.",
     description_en: "Premium fleece jacket for corporate branding. Available with printing or embroidery.",
-    category: "Fleecetakit", images: [hoodiesImg, fleece1Img, fleece3Img],
+    category: "Fleecetakit", images: [hoodiesImg, fleece1Img],
   },
   {
     id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt",
