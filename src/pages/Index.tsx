@@ -11,7 +11,7 @@ import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
 const fallbackCategories = [
-  { id: "1", name_fi: "Hupparit", name_en: "Hoodies", cover_image: hoodiesImg },
+  { id: "1", name_fi: "Fleecetakit", name_en: "Fleece Jackets", cover_image: hoodiesImg },
   { id: "2", name_fi: "T-paidat", name_en: "T-Shirts", cover_image: tshirtsImg },
   { id: "3", name_fi: "Lippikset", name_en: "Caps", cover_image: capsImg },
 ];
