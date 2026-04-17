@@ -4,18 +4,31 @@ import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
-import hoodiesImg from "@/assets/category-hoodies.jpg";
+import fume1 from "@/assets/Fume 1 kalite.webp";
+import fume2 from "@/assets/Fume 2 kalie .webp";
+import fume3 from "@/assets/Fume 3 kalite .webp";
+import fume4 from "@/assets/Fume 4 kalite .webp";
+import fume5 from "@/assets/Fume 5 kalite.webp";
+import fume6 from "@/assets/Fume 6 kalite.webp";
+import fume7 from "@/assets/Fume 7 kalite.webp";
+import fume8 from "@/assets/Fume 8 kalite.webp";
+import fume9 from "@/assets/Fume 9 kalite.webp";
+import fume10 from "@/assets/Fume 10 kalite.webp";
+import fume11 from "@/assets/Fume 11 kalite .webp";
+import fume12 from "@/assets/Fume 12 kalite.webp";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
+const fleeceImages = [fume1, fume2, fume3, fume4, fume5, fume6, fume7, fume8, fume9, fume10, fume11, fume12];
+
 const fallbackCategories = [
-  { id: "1", name_fi: "Hupparit", name_en: "Hoodies", cover_image: hoodiesImg },
+  { id: "1", name_fi: "Fleecetakit", name_en: "Fleece Jackets", cover_image: fume1 },
   { id: "2", name_fi: "T-paidat", name_en: "T-Shirts", cover_image: tshirtsImg },
   { id: "3", name_fi: "Lippikset", name_en: "Caps", cover_image: capsImg },
 ];
 
 const fallbackProducts = [
-  { id: "p1", name_fi: "Fleecetakki", name_en: "Fleece Jacket", description_fi: "Laadukas fleecetakki", description_en: "Premium fleece jacket", category: "Fleecetakit", images: [hoodiesImg] },
+  { id: "p1", name_fi: "Fleecetakki", name_en: "Fleece Jacket", description_fi: "Laadukas fleecetakki yritysbrändäykseen. Saatavilla useissa väreissä.", description_en: "Premium fleece jacket for corporate branding. Available in multiple colors.", category: "Fleecetakit", images: fleeceImages },
   { id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt", description_fi: "Korkealaatuinen t-paita", description_en: "High-quality t-shirt", category: "T-paidat", images: [tshirtsImg] },
   { id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap", description_fi: "Tyylikäs lippis", description_en: "Stylish cap", category: "Lippikset", images: [capsImg] },
 ];

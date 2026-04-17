@@ -5,16 +5,29 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
-import hoodiesImg from "@/assets/category-hoodies.jpg";
+import fume1 from "@/assets/Fume 1 kalite.webp";
+import fume2 from "@/assets/Fume 2 kalie .webp";
+import fume3 from "@/assets/Fume 3 kalite .webp";
+import fume4 from "@/assets/Fume 4 kalite .webp";
+import fume5 from "@/assets/Fume 5 kalite.webp";
+import fume6 from "@/assets/Fume 6 kalite.webp";
+import fume7 from "@/assets/Fume 7 kalite.webp";
+import fume8 from "@/assets/Fume 8 kalite.webp";
+import fume9 from "@/assets/Fume 9 kalite.webp";
+import fume10 from "@/assets/Fume 10 kalite.webp";
+import fume11 from "@/assets/Fume 11 kalite .webp";
+import fume12 from "@/assets/Fume 12 kalite.webp";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
+
+const fleeceImages = [fume1, fume2, fume3, fume4, fume5, fume6, fume7, fume8, fume9, fume10, fume11, fume12];
 
 const fallbackProducts = [
   {
     id: "p1", name_fi: "Fleecetakki", name_en: "Fleece Jacket",
-    description_fi: "Laadukas fleecetakki yritysbrändäykseen. Saatavilla painatuksella tai brodeerauksella.",
-    description_en: "Premium fleece jacket for corporate branding. Available with printing or embroidery.",
-    category: "Fleecetakit", images: [hoodiesImg],
+    description_fi: "Laadukas fleecetakki yritysbrändäykseen. Saatavilla useissa väreissä, painatuksella tai brodeerauksella.",
+    description_en: "Premium fleece jacket for corporate branding. Available in multiple colors, with printing or embroidery.",
+    category: "Fleecetakit", images: fleeceImages,
   },
   {
     id: "p2", name_fi: "Premium T-paita", name_en: "Premium T-Shirt",
