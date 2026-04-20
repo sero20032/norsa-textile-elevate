@@ -48,7 +48,13 @@ const ProductDetail: React.FC = () => {
   });
 
   const product = dbProduct || fallbackProducts.find((p) => p.id === id);
-  const images = product?.images && product.images.length > 0 ? product.images : [];
+  const images = useMemo(() => {
+    if (product?.id === "p1") {
+      return fleeceImages;
+    }
+
+    return product?.images && product.images.length > 0 ? product.images : [];
+  }, [product]);
   const thumbnailImages = useMemo(() => {
     if (product?.id === "p1" && images.length === fleeceThumbnails.length) {
       return fleeceThumbnails;
