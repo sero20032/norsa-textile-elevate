@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -86,7 +87,7 @@ const ProductDetail: React.FC = () => {
             <div>
               {images.length > 0 && (
                 <>
-                  <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-lg mb-4 group">
                     <img
                       src={images[activeImage]}
                       alt={t(product.name_fi, product.name_en)}
@@ -94,6 +95,24 @@ const ProductDetail: React.FC = () => {
                       width={800}
                       height={1000}
                     />
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setActiveImage((activeImage - 1 + images.length) % images.length)}
+                          aria-label={t("Edellinen kuva", "Previous image")}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 shadow-md transition-colors"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setActiveImage((activeImage + 1) % images.length)}
+                          aria-label={t("Seuraava kuva", "Next image")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 shadow-md transition-colors"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
                   </div>
                   {images.length > 1 && (
                     <div className="flex gap-3">
