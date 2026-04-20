@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -6,22 +6,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
-import fume1 from "@/assets/Fume 1 kalite.webp";
-import fume2 from "@/assets/Fume 2 kalie .webp";
-import fume3 from "@/assets/Fume 3 kalite .webp";
-import fume4 from "@/assets/Fume 4 kalite .webp";
-import fume5 from "@/assets/Fume 5 kalite.webp";
-import fume6 from "@/assets/Fume 6 kalite.webp";
-import fume7 from "@/assets/Fume 7 kalite.webp";
-import fume8 from "@/assets/Fume 8 kalite.webp";
-import fume9 from "@/assets/Fume 9 kalite.webp";
-import fume10 from "@/assets/Fume 10 kalite.webp";
-import fume11 from "@/assets/Fume 11 kalite .webp";
-import fume12 from "@/assets/Fume 12 kalite.webp";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
-const fleeceImages = [fume1, fume2, fume3, fume4, fume5, fume6, fume7, fume8, fume9, fume10, fume11, fume12];
+const fleeceImages = Array.from({ length: 12 }, (_, index) => `/products/fume/fume-${index + 1}.webp`);
+const fleeceThumbnails = Array.from({ length: 12 }, (_, index) => `/products/fume/thumbs/fume-${index + 1}-thumb.webp`);
 
 const fallbackProducts = [
   {
@@ -59,6 +48,32 @@ const ProductDetail: React.FC = () => {
   });
 
   const product = dbProduct || fallbackProducts.find((p) => p.id === id);
+  const images = useMemo(() => {
+    if (product?.id === "p1") {
+      return fleeceImages;
+    }
+
+    return product?.images && product.images.length > 0 ? product.images : [];
+  }, [product]);
+  const thumbnailImages = useMemo(() => {
+    if (product?.id === "p1" && images.length === fleeceThumbnails.length) {
+      return fleeceThumbnails;
+    }
+
+    return images;
+  }, [images, product?.id]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [product?.id]);
+
+  useEffect(() => {
+    images.forEach((src) => {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = src;
+    });
+  }, [images]);
 
   if (!product) {
     return (
@@ -72,8 +87,6 @@ const ProductDetail: React.FC = () => {
       </Layout>
     );
   }
-
-  const images = product.images && product.images.length > 0 ? product.images : [];
 
   return (
     <Layout>
@@ -94,10 +107,14 @@ const ProductDetail: React.FC = () => {
                       className="w-full h-full object-cover"
                       width={800}
                       height={1000}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
                     />
                     {images.length > 1 && (
                       <>
                         <button
+                          type="button"
                           onClick={() => setActiveImage((activeImage - 1 + images.length) % images.length)}
                           aria-label={t("Edellinen kuva", "Previous image")}
                           className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 shadow-md transition-colors"
@@ -105,6 +122,7 @@ const ProductDetail: React.FC = () => {
                           <ChevronLeft className="w-5 h-5" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => setActiveImage((activeImage + 1) % images.length)}
                           aria-label={t("Seuraava kuva", "Next image")}
                           className="absolute right-3 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 shadow-md transition-colors"
@@ -114,17 +132,27 @@ const ProductDetail: React.FC = () => {
                       </>
                     )}
                   </div>
-                  {images.length > 1 && (
-                    <div className="flex gap-3">
-                      {images.map((img, idx) => (
+                  {thumbnailImages.length > 1 && (
+                    <div className="flex gap-3 overflow-x-auto pb-2">
+                      {thumbnailImages.map((img, idx) => (
                         <button
                           key={idx}
+                          type="button"
                           onClick={() => setActiveImage(idx)}
-                          className={`w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
+                          className={`w-20 h-20 shrink-0 rounded-md overflow-hidden border-2 transition-colors ${
                             activeImage === idx ? "border-foreground" : "border-transparent"
                           }`}
+                          aria-label={`${t(product.name_fi, product.name_en)} ${idx + 1}`}
                         >
-                          <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          <img
+                            src={img}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            width={80}
+                            height={80}
+                          />
                         </button>
                       ))}
                     </div>
