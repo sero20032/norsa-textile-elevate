@@ -177,9 +177,45 @@ const ProductDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-6">
                 {t(product.name_fi, product.name_en)}
               </h1>
-              <p className="text-muted-foreground leading-relaxed mb-10">
+              <p className="text-muted-foreground leading-relaxed mb-8">
                 {t(product.description_fi || "", product.description_en || "")}
               </p>
+              {variants.length > 0 && (
+                <div className="mb-8">
+                  <p className="text-sm font-medium mb-3">
+                    {t("Väri", "Color")}:{" "}
+                    <span className="text-muted-foreground">
+                      {activeVariant
+                        ? t(activeVariant.color_label_fi, activeVariant.color_label_en)
+                        : ""}
+                    </span>
+                  </p>
+                  <div className="flex gap-3">
+                    {variants.map((v) => {
+                      const isActive = v.color === activeVariant?.color;
+                      return (
+                        <button
+                          key={v.color}
+                          type="button"
+                          onClick={() => {
+                            const next = new URLSearchParams(searchParams);
+                            next.set("color", v.color);
+                            setSearchParams(next, { replace: true });
+                          }}
+                          aria-label={t(v.color_label_fi, v.color_label_en)}
+                          title={t(v.color_label_fi, v.color_label_en)}
+                          className={`w-8 h-8 rounded-full border transition-all ${
+                            isActive
+                              ? "ring-2 ring-foreground ring-offset-2 ring-offset-background border-transparent"
+                              : "border-border hover:scale-110"
+                          }`}
+                          style={{ backgroundColor: v.hex }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <Link to="/tarjous">
                 <Button variant="default" size="lg" className="px-10">
                   {t("Pyydä tarjous", "Request a Quote")}
