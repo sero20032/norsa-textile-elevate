@@ -37,6 +37,7 @@ const fallbackProducts = [
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeImage, setActiveImage] = useState(0);
 
   const { data: dbProduct } = useQuery({
@@ -49,24 +50,31 @@ const ProductDetail: React.FC = () => {
   });
 
   const product = dbProduct || fallbackProducts.find((p) => p.id === id);
-  const images = useMemo(() => {
-    if (product?.id === "p1") {
-      return fleeceImages;
-    }
+  const variants = useMemo(() => parseVariants((product as { variants?: unknown })?.variants), [product]);
 
+  const colorParam = searchParams.get("color");
+  const activeVariantIdx = Math.max(
+    0,
+    variants.findIndex((v) => v.color === colorParam)
+  );
+  const activeVariant = variants[activeVariantIdx];
+
+  const images = useMemo(() => {
+    if (activeVariant?.images?.length) return activeVariant.images;
+    if (product?.id === "p1") return fleeceImages;
     return product?.images && product.images.length > 0 ? product.images : [];
-  }, [product]);
+  }, [activeVariant, product]);
+
   const thumbnailImages = useMemo(() => {
-    if (product?.id === "p1" && images.length === fleeceThumbnails.length) {
+    if (!activeVariant && product?.id === "p1" && images.length === fleeceThumbnails.length) {
       return fleeceThumbnails;
     }
-
     return images;
-  }, [images, product?.id]);
+  }, [images, activeVariant, product?.id]);
 
   useEffect(() => {
     setActiveImage(0);
-  }, [product?.id]);
+  }, [product?.id, activeVariant?.color]);
 
   useEffect(() => {
     images.forEach((src) => {
