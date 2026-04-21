@@ -48,6 +48,7 @@ export type Database = {
           images: string[] | null
           name_en: string
           name_fi: string
+          variants: Json
         }
         Insert: {
           category: string
@@ -58,6 +59,7 @@ export type Database = {
           images?: string[] | null
           name_en: string
           name_fi: string
+          variants?: Json
         }
         Update: {
           category?: string
@@ -68,6 +70,7 @@ export type Database = {
           images?: string[] | null
           name_en?: string
           name_fi?: string
+          variants?: Json
         }
         Relationships: []
       }
