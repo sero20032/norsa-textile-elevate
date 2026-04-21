@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
+import { parseVariants } from "@/lib/colorVariants";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
