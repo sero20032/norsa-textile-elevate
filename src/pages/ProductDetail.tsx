@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
+import { parseVariants } from "@/lib/colorVariants";
 import tshirtsImg from "@/assets/category-tshirts.jpg";
 import capsImg from "@/assets/category-caps.jpg";
 
@@ -36,6 +37,7 @@ const fallbackProducts = [
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeImage, setActiveImage] = useState(0);
 
   const { data: dbProduct } = useQuery({
@@ -48,24 +50,31 @@ const ProductDetail: React.FC = () => {
   });
 
   const product = dbProduct || fallbackProducts.find((p) => p.id === id);
-  const images = useMemo(() => {
-    if (product?.id === "p1") {
-      return fleeceImages;
-    }
+  const variants = useMemo(() => parseVariants((product as { variants?: unknown })?.variants), [product]);
 
+  const colorParam = searchParams.get("color");
+  const activeVariantIdx = Math.max(
+    0,
+    variants.findIndex((v) => v.color === colorParam)
+  );
+  const activeVariant = variants[activeVariantIdx];
+
+  const images = useMemo(() => {
+    if (activeVariant?.images?.length) return activeVariant.images;
+    if (product?.id === "p1") return fleeceImages;
     return product?.images && product.images.length > 0 ? product.images : [];
-  }, [product]);
+  }, [activeVariant, product]);
+
   const thumbnailImages = useMemo(() => {
-    if (product?.id === "p1" && images.length === fleeceThumbnails.length) {
+    if (!activeVariant && product?.id === "p1" && images.length === fleeceThumbnails.length) {
       return fleeceThumbnails;
     }
-
     return images;
-  }, [images, product?.id]);
+  }, [images, activeVariant, product?.id]);
 
   useEffect(() => {
     setActiveImage(0);
-  }, [product?.id]);
+  }, [product?.id, activeVariant?.color]);
 
   useEffect(() => {
     images.forEach((src) => {
@@ -168,9 +177,45 @@ const ProductDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-6">
                 {t(product.name_fi, product.name_en)}
               </h1>
-              <p className="text-muted-foreground leading-relaxed mb-10">
+              <p className="text-muted-foreground leading-relaxed mb-8">
                 {t(product.description_fi || "", product.description_en || "")}
               </p>
+              {variants.length > 0 && (
+                <div className="mb-8">
+                  <p className="text-sm font-medium mb-3">
+                    {t("Väri", "Color")}:{" "}
+                    <span className="text-muted-foreground">
+                      {activeVariant
+                        ? t(activeVariant.color_label_fi, activeVariant.color_label_en)
+                        : ""}
+                    </span>
+                  </p>
+                  <div className="flex gap-3">
+                    {variants.map((v) => {
+                      const isActive = v.color === activeVariant?.color;
+                      return (
+                        <button
+                          key={v.color}
+                          type="button"
+                          onClick={() => {
+                            const next = new URLSearchParams(searchParams);
+                            next.set("color", v.color);
+                            setSearchParams(next, { replace: true });
+                          }}
+                          aria-label={t(v.color_label_fi, v.color_label_en)}
+                          title={t(v.color_label_fi, v.color_label_en)}
+                          className={`w-8 h-8 rounded-full border transition-all ${
+                            isActive
+                              ? "ring-2 ring-foreground ring-offset-2 ring-offset-background border-transparent"
+                              : "border-border hover:scale-110"
+                          }`}
+                          style={{ backgroundColor: v.hex }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <Link to="/tarjous">
                 <Button variant="default" size="lg" className="px-10">
                   {t("Pyydä tarjous", "Request a Quote")}
