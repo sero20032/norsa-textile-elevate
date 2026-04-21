@@ -101,27 +101,7 @@ const Products: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
-              <Link
-                key={product.id}
-                to={`/tuotteet/${product.id}`}
-                className="group"
-              >
-                <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4 bg-secondary">
-                  {product.images && product.images[0] && (
-                    <img
-                      src={product.images[0]}
-                      alt={t(product.name_fi, product.name_en)}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
-                      width={800}
-                      height={1000}
-                    />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold group-hover:text-muted-foreground transition-colors">
-                  {t(product.name_fi, product.name_en)}
-                </h3>
-              </Link>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
