@@ -34,6 +34,71 @@ const fallbackProducts = [
   { id: "p3", name_fi: "Brodeerattu lippis", name_en: "Embroidered Cap", description_fi: "Tyylikäs lippis", description_en: "Stylish cap", category: "Lippikset", images: [capsImg] },
 ];
 
+type ProductLike = {
+  id: string;
+  name_fi: string;
+  name_en: string;
+  category?: string;
+  images?: string[] | null;
+  variants?: unknown;
+};
+
+const ProductCard: React.FC<{ product: ProductLike }> = ({ product }) => {
+  const { t } = useLanguage();
+  const variants: ColorVariant[] = parseVariants(product.variants);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const activeVariant = variants[activeIdx];
+  const displayImage = activeVariant?.images?.[0] || product.images?.[0] || "";
+  const detailHref = activeVariant
+    ? `/tuotteet/${product.id}?color=${encodeURIComponent(activeVariant.color)}`
+    : `/tuotteet/${product.id}`;
+
+  return (
+    <div className="group">
+      <Link to={detailHref}>
+        <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4 bg-secondary">
+          {displayImage && (
+            <img
+              src={displayImage}
+              alt={t(product.name_fi, product.name_en)}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              width={800}
+              height={1000}
+            />
+          )}
+        </div>
+        <h3 className="text-lg font-semibold group-hover:text-muted-foreground transition-colors">
+          {t(product.name_fi, product.name_en)}
+        </h3>
+      </Link>
+      {variants.length > 1 && (
+        <div className="flex gap-2 mt-3">
+          {variants.map((v, idx) => (
+            <button
+              key={v.color}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveIdx(idx);
+              }}
+              aria-label={t(v.color_label_fi, v.color_label_en)}
+              title={t(v.color_label_fi, v.color_label_en)}
+              className={`w-5 h-5 rounded-full border transition-all ${
+                activeIdx === idx
+                  ? "ring-2 ring-foreground ring-offset-2 ring-offset-background border-transparent"
+                  : "border-border hover:scale-110"
+              }`}
+              style={{ backgroundColor: v.hex }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Products: React.FC = () => {
   const { t } = useLanguage();
   const [searchParams] = useSearchParams();
