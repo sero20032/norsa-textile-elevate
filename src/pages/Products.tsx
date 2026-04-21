@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
+import { parseVariants, type ColorVariant } from "@/lib/colorVariants";
 import fume1 from "@/assets/Fume 1 kalite.webp";
 import fume2 from "@/assets/Fume 2 kalie .webp";
 import fume3 from "@/assets/Fume 3 kalite .webp";
