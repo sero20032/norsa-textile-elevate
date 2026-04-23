@@ -1,17 +1,91 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
-import { products } from "./Products";
+import { supabase } from "@/integrations/supabase/client";
+import { products, type ProductRow } from "./Products";
+import {
+  parseVariants,
+  type ColorVariant,
+  DEFAULT_SWATCH_COLORS,
+} from "@/lib/colorVariants";
+
+const swatchHex = (variant: ColorVariant): string =>
+  variant.hex || DEFAULT_SWATCH_COLORS[variant.color]?.hex || "#9CA3AF";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeImage, setActiveImage] = useState(0);
+  const [product, setProduct] = useState<ProductRow | null | undefined>(undefined);
 
-  const product = products.find((p) => p.id === id);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name_fi, name_en, description_fi, description_en, category, images, variants")
+        .eq("id", id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        // Fallback to hardcoded
+        setProduct(products.find((p) => p.id === id) ?? null);
+        return;
+      }
+      setProduct({
+        id: data.id,
+        name_fi: data.name_fi,
+        name_en: data.name_en,
+        description_fi: data.description_fi,
+        description_en: data.description_en,
+        category: data.category,
+        images: data.images ?? [],
+        variants: parseVariants(data.variants),
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const variants = product?.variants ?? [];
+  const colorParam = searchParams.get("color");
+
+  const selectedVariantIdx = useMemo(() => {
+    if (!variants.length) return -1;
+    if (colorParam) {
+      const idx = variants.findIndex((v) => v.color === colorParam);
+      if (idx >= 0) return idx;
+    }
+    return 0;
+  }, [variants, colorParam]);
+
+  const selectedVariant = selectedVariantIdx >= 0 ? variants[selectedVariantIdx] : null;
+
+  const images = useMemo(() => {
+    if (selectedVariant?.images?.length) return selectedVariant.images;
+    return product?.images ?? [];
+  }, [selectedVariant, product]);
+
+  // Reset gallery index when variant/product changes
+  useEffect(() => {
+    setActiveImage(0);
+  }, [selectedVariantIdx, product?.id]);
+
+  if (product === undefined) {
+    return (
+      <Layout>
+        <div className="py-24 px-4 text-center">
+          <p className="text-muted-foreground">{t("Ladataan...", "Loading...")}</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -26,7 +100,11 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const images = product.images;
+  const handleSelectVariant = (variant: ColorVariant) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("color", variant.color);
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <Layout>
@@ -103,8 +181,51 @@ const ProductDetail: React.FC = () => {
                 {t(product.name_fi, product.name_en)}
               </h1>
               <p className="text-muted-foreground leading-relaxed mb-8">
-                {t(product.description_fi, product.description_en)}
+                {t(product.description_fi ?? "", product.description_en ?? "")}
               </p>
+
+              {variants.length > 0 && (
+                <div className="mb-8">
+                  <p className="text-sm font-medium mb-3">
+                    {t("Väri", "Color")}
+                    {selectedVariant && (
+                      <span className="text-muted-foreground font-normal ml-2">
+                        {t(selectedVariant.color_label_fi, selectedVariant.color_label_en) ||
+                          DEFAULT_SWATCH_COLORS[selectedVariant.color]?.[
+                            t("fi", "en") as "fi" | "en"
+                          ] ||
+                          selectedVariant.color}
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex gap-3 flex-wrap">
+                    {variants.map((v, idx) => {
+                      const label =
+                        t(v.color_label_fi, v.color_label_en) ||
+                        DEFAULT_SWATCH_COLORS[v.color]?.[
+                          t("fi", "en") as "fi" | "en"
+                        ] ||
+                        v.color;
+                      return (
+                        <button
+                          key={`${v.color}-${idx}`}
+                          type="button"
+                          aria-label={label}
+                          title={label}
+                          onClick={() => handleSelectVariant(v)}
+                          className={`w-9 h-9 rounded-full border-2 transition-all ${
+                            selectedVariantIdx === idx
+                              ? "border-foreground scale-110"
+                              : "border-border hover:border-foreground/50"
+                          }`}
+                          style={{ backgroundColor: swatchHex(v) }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <Link to="/tarjous">
                 <Button variant="default" size="lg" className="px-10">
                   {t("Pyydä tarjous", "Request a Quote")}

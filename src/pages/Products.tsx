@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  parseVariants,
+  type ColorVariant,
+  DEFAULT_SWATCH_COLORS,
+} from "@/lib/colorVariants";
 import fume1 from "@/assets/Fume 1 kalite.webp";
 import fume2 from "@/assets/Fume 2 kalie .webp";
 import fume3 from "@/assets/Fume 3 kalite .webp";
@@ -25,7 +31,19 @@ export const categories = [
   { id: "3", name_fi: "Lippikset", name_en: "Caps", cover_image: capsImg },
 ];
 
-export const products = [
+export type ProductRow = {
+  id: string;
+  name_fi: string;
+  name_en: string;
+  description_fi: string | null;
+  description_en: string | null;
+  category: string;
+  images: string[];
+  variants: ColorVariant[];
+};
+
+// Hardcoded fallback (used only when Supabase returns no rows)
+export const products: ProductRow[] = [
   {
     id: "p1",
     name_fi: "Harmaa Fleece Takki",
@@ -34,6 +52,7 @@ export const products = [
     description_en: "Premium fleece jacket for corporate branding. Available with printing or embroidery.",
     category: "Fleecetakit",
     images: fleeceImages,
+    variants: [],
   },
   {
     id: "p2",
@@ -43,6 +62,7 @@ export const products = [
     description_en: "High-quality t-shirt with printing or embroidery.",
     category: "T-paidat",
     images: [tshirtsImg],
+    variants: [],
   },
   {
     id: "p3",
@@ -52,17 +72,124 @@ export const products = [
     description_en: "Stylish cap with embroidery or printing.",
     category: "Lippikset",
     images: [capsImg],
+    variants: [],
   },
 ];
+
+const swatchHex = (variant: ColorVariant): string =>
+  variant.hex || DEFAULT_SWATCH_COLORS[variant.color]?.hex || "#9CA3AF";
+
+const ProductCard: React.FC<{ product: ProductRow }> = ({ product }) => {
+  const { t } = useLanguage();
+  const variants = product.variants ?? [];
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const selectedVariant = variants[selectedIdx];
+  const displayImage =
+    selectedVariant?.images?.[0] || product.images?.[0] || "";
+
+  const linkTo = selectedVariant
+    ? `/tuotteet/${product.id}?color=${encodeURIComponent(selectedVariant.color)}`
+    : `/tuotteet/${product.id}`;
+
+  return (
+    <div className="group">
+      <Link to={linkTo}>
+        <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4 bg-secondary">
+          {displayImage && (
+            <img
+              src={displayImage}
+              alt={t(product.name_fi, product.name_en)}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              width={800}
+              height={1000}
+            />
+          )}
+        </div>
+        <h3 className="text-lg font-semibold group-hover:text-muted-foreground transition-colors">
+          {t(product.name_fi, product.name_en)}
+        </h3>
+      </Link>
+
+      {variants.length > 0 && (
+        <div className="flex gap-2 mt-3">
+          {variants.map((v, idx) => {
+            const label =
+              t(v.color_label_fi, v.color_label_en) ||
+              DEFAULT_SWATCH_COLORS[v.color]?.[
+                t("fi", "en") as "fi" | "en"
+              ] ||
+              v.color;
+            return (
+              <button
+                key={`${v.color}-${idx}`}
+                type="button"
+                aria-label={label}
+                title={label}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedIdx(idx);
+                }}
+                className={`w-6 h-6 rounded-full border-2 transition-all ${
+                  selectedIdx === idx
+                    ? "border-foreground scale-110"
+                    : "border-border hover:border-foreground/50"
+                }`}
+                style={{ backgroundColor: swatchHex(v) }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Products: React.FC = () => {
   const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
+  const [dbProducts, setDbProducts] = useState<ProductRow[] | null>(null);
 
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category === selectedCategory)
-    : products;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name_fi, name_en, description_fi, description_en, category, images, variants");
+      if (cancelled) return;
+      if (error || !data || data.length === 0) {
+        setDbProducts(null);
+        return;
+      }
+      setDbProducts(
+        data.map((p) => ({
+          id: p.id,
+          name_fi: p.name_fi,
+          name_en: p.name_en,
+          description_fi: p.description_fi,
+          description_en: p.description_en,
+          category: p.category,
+          images: p.images ?? [],
+          variants: parseVariants(p.variants),
+        }))
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const sourceProducts = dbProducts ?? products;
+
+  const filteredProducts = useMemo(
+    () =>
+      selectedCategory
+        ? sourceProducts.filter((p) => p.category === selectedCategory)
+        : sourceProducts,
+    [sourceProducts, selectedCategory]
+  );
 
   return (
     <Layout>
@@ -103,27 +230,7 @@ const Products: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
-              <Link
-                key={product.id}
-                to={`/tuotteet/${product.id}`}
-                className="group"
-              >
-                <div className="aspect-[4/5] overflow-hidden rounded-lg mb-4 bg-secondary">
-                  {product.images[0] && (
-                    <img
-                      src={product.images[0]}
-                      alt={t(product.name_fi, product.name_en)}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
-                      width={800}
-                      height={1000}
-                    />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold group-hover:text-muted-foreground transition-colors">
-                  {t(product.name_fi, product.name_en)}
-                </h3>
-              </Link>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
