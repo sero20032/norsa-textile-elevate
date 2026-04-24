@@ -7,7 +7,6 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-textile.jpg";
 import hoodiesImg from "@/assets/Fume 1 kalite.webp";
-import hoodiesImg from "@/assets/Fume 1 kalite.webp";
 import capsImg from "@/assets/category-caps.jpg";
 
 const fallbackCategories = [
