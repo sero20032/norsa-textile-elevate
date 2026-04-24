@@ -7,12 +7,12 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-textile.jpg";
 import hoodiesImg from "@/assets/Fume 1 kalite.webp";
-import tshirtsImg from "@/assets/category-tshirts.jpg";
+import hoodiesImg from "@/assets/Fume 1 kalite.webp";
 import capsImg from "@/assets/category-caps.jpg";
 
 const fallbackCategories = [
   { id: "1", name_fi: "Fleecetakit", name_en: "Fleece Jackets", cover_image: hoodiesImg },
-  { id: "2", name_fi: "T-paidat", name_en: "T-Shirts", cover_image: tshirtsImg },
+  { id: "2", name_fi: "T-paidat", name_en: "T-Shirts", cover_image: "https://byyxgghbxfnahqzszcmc.supabase.co/storage/v1/object/public/products/tshirt/tshirt%20grey/grey%201%20kalite.webp" },
   { id: "3", name_fi: "Lippikset", name_en: "Caps", cover_image: capsImg },
 ];
 
